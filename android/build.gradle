@@ -34,6 +34,5 @@ android {
 }
 
 dependencies {
-    compile files('libs/KMPrinter-Ver20180821.jar')
-    compileOnly files('libs/flutter.jar')
+    implementation files('libs/KMPrinter-Ver20180821.jar')
 }

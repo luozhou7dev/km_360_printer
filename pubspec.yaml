@@ -2,7 +2,7 @@ name: km_360_printer
 description: A new flutter plugin project.
 version: 0.0.1
 author: Luozhou <luozhou23dev@gmail.com>
-homepage: https://jekton.github.io/
+homepage: https://github.com/luozhou7dev/km_360_printer
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
