@@ -36,6 +36,7 @@ public class Km360PrinterPlugin implements MethodCallHandler {
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
+        String printerStatus;
         switch (call.method) {
             case "getPlatformVersion":
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
@@ -59,13 +60,13 @@ public class Km360PrinterPlugin implements MethodCallHandler {
                     result.success("FAILED");
                 }
                 break;
-            case "printQrCode":
+            case "printLogisticsQrCode":
                 if (!printPort.isConnected()) {
                     result.success("NO_CONNECTION");
                     return;
                 }
-                String printerStatus = printPort.printerStatus();
-                if (printerStatus.equals("OK")) {
+                printerStatus = printPort.printerStatus();
+                if (printerStatus.equals("OK") || printerStatus.equals("Printing")) {
                     @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd HH:mm");
                     @SuppressLint("UseSparseArrays") Map<Integer, Integer> yCoordinatesMap = new HashMap<>();
                     yCoordinatesMap.put(0, 140);
@@ -86,26 +87,57 @@ public class Km360PrinterPlugin implements MethodCallHandler {
                     List<Map<String, Object>> steps = call.argument("steps");
 
                     printPort.pageSetup(560, 400 - 8);
-                    printPort.drawQrCode(50, -10, qrCode, 0, 10, 0);
-                    printPort.drawText(50, 220, qrCode, 2, 0, 0, false, false);
-                    printPort.drawText(50, 250, "打印时间：" + simpleDateFormat.format(new Date(printTimeStamp)), 1, 0, 0, false, false);
+                    printPort.drawQrCode(30, -10, qrCode, 0, 10, 0);
+                    printPort.drawText(30, 220, qrCode, 2, 0, 0, false, false);
+                    printPort.drawText(30, 250, "打印时间：" + simpleDateFormat.format(new Date(printTimeStamp)), 1, 0, 0, false, false);
 
-                    printPort.drawText(280, -10, "工单：" + workOrderCode, 2, 0, 0, false, false);
-                    printPort.drawText(280, 20, "产品：" + productCode, 2, 0, 0, false, false);
-                    printPort.drawText(280, 50, "数量：" + quantity + " PCS", 2, 0, 0, false, false);
+                    printPort.drawText(260, -10, "工单：" + workOrderCode, 2, 0, 0, false, false);
+                    printPort.drawText(260, 20, "产品：" + productCode, 2, 0, 0, false, false);
+                    printPort.drawText(260, 50, "数量：" + quantity + " PCS", 2, 0, 0, false, false);
 
-                    printPort.drawText(280, 100, "RunCard：" + runCardVersion, 2, 0, 0, false, false);
+                    printPort.drawText(260, 100, "RunCard：" + runCardVersion, 2, 0, 0, false, false);
 
                     int index;
                     for (index = 0; index < steps.size(); index++) {
                         Map<String, Object> currentStep = steps.get(index);
                         String finishIcon = (Boolean) currentStep.get("isFinished") ? "√" : "□";
                         String stepName = currentStep.get("name").toString();
-                        Integer xCoordinate = index % 2 == 0 ? 310 : 450;
+                        Integer xCoordinate = index % 2 == 0 ? 290 : 430;
 
                         printPort.drawText(xCoordinate - 30, yCoordinatesMap.get(index) - 5, finishIcon, 2, 0, 1, false, false);
                         printPort.drawText(xCoordinate, yCoordinatesMap.get(index), stepName, 1, 0, 0, false, false);
                     }
+                    result.success(printPort.print(0, 0));
+                } else {
+                    result.success(printerStatus);
+                }
+                break;
+            case "printWmsQrCode":
+                if (!printPort.isConnected()) {
+                    result.success("NO_CONNECTION");
+                    return;
+                }
+                printerStatus = printPort.printerStatus();
+                if (printerStatus.equals("OK") || printerStatus.equals("Printing")) {
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd HH:mm");
+
+                    String qrCode = call.argument("qrCode");
+                    String productName = call.argument("productName");
+                    String productCode = call.argument("productCode");
+                    String productSpec = call.argument("productSpec");
+                    int quantity = call.argument("quantity");
+                    long printTimeStamp = call.argument("printTimeStamp");
+
+                    printPort.pageSetup(560, 400 - 8);
+                    printPort.drawQrCode(30, -10, qrCode, 0, 10, 0);
+                    printPort.drawText(30, 220, qrCode, 2, 0, 0, false, false);
+                    printPort.drawText(30, 250, "打印时间：" + simpleDateFormat.format(new Date(printTimeStamp)), 1, 0, 0, false, false);
+
+                    printPort.drawText(260, -10, "料件编号：" + productCode, 2, 0, 0, false, false);
+                    printPort.drawText(260, 30, "品名：" + productName, 2, 0, 0, false, false);
+                    printPort.drawText(260, 70, "规格：" + productSpec, 2, 0, 0, false, false);
+                    printPort.drawText(260, 110, "数量：" + quantity + " PCS", 2, 0, 0, false, false);
+
                     result.success(printPort.print(0, 0));
                 } else {
                     result.success(printerStatus);

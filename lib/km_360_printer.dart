@@ -10,19 +10,21 @@ class Km360Printer {
     return version;
   }
 
-  Future<String> connect(String name, String address) async {
+  static Future<String> connect(String name, String address) async {
     Map<String, String> params = {"name": name, "address": address};
     final String connectCode = await _channel.invokeMethod('connect', params);
     return connectCode;
   }
 
-  Future<String> printQrCode(String qrCode,
-      String workOrderCode,
-      String productCode,
-      int quantity,
-      int runCardVersion,
-      int printTimeStamp,
-      List<PrinterWorkOrderStep> steps,) async {
+  static Future<String> printLogisticsQrCode(
+    String qrCode,
+    String workOrderCode,
+    String productCode,
+    int quantity,
+    int runCardVersion,
+    int printTimeStamp,
+    List<PrinterWorkOrderStep> steps,
+  ) async {
     List<Map<String, Object>> stepList = [];
     steps.forEach((step) {
       stepList.add({
@@ -39,8 +41,28 @@ class Km360Printer {
       "printTimeStamp": printTimeStamp,
       "steps": stepList,
     };
-    final String resultInfo = await _channel.invokeMethod(
-        'printQrCode', params);
+    final String resultInfo =
+        await _channel.invokeMethod('printLogisticsQrCode', params);
+    return resultInfo;
+  }
+
+  static Future<String> printWmsQrCode(
+      String qrCode,
+      String productName,
+      String productCode,
+      String productSpec,
+      int quantity,
+      int printTimeStamp) async {
+    Map<String, Object> params = {
+      "qrCode": qrCode,
+      "productName": productName,
+      "productCode": productCode,
+      "quantity": quantity,
+      "productSpec": productSpec,
+      "printTimeStamp": printTimeStamp,
+    };
+    final String resultInfo =
+        await _channel.invokeMethod('printWmsQrCode', params);
     return resultInfo;
   }
 }
