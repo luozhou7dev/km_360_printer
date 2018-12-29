@@ -10,6 +10,11 @@ class Km360Printer {
     return version;
   }
 
+  static Future<String> get printerStatus async {
+    final String printerStatus = await _channel.invokeMethod('getPrinterStatus');
+    return printerStatus;
+  }
+
   static Future<String> connect(String name, String address) async {
     Map<String, String> params = {"name": name, "address": address};
     final String connectCode = await _channel.invokeMethod('connect', params);
@@ -71,5 +76,5 @@ class PrinterWorkOrderStep {
   final String name;
   final bool isFinished;
 
-  PrinterWorkOrderStep(this.name, this.isFinished);
+  PrinterWorkOrderStep({this.name, this.isFinished});
 }
